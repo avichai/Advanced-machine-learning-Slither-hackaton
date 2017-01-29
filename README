@@ -1,0 +1,15 @@
+Policy2345678;TheSnakeEater; We learn an aggressive snake, that homes in on other snakes and block them
+====
+ID1: 2345678
+ID2: 8765432
+==== (max 1000 chars)
+We represent the world as directional rays to extrapolated player intersection  positions.
+==== (max 600 chars)
+Our model has two parts - first, the rays are fed into 2 hidden layers of common kernels, the output from this stage is then fed into a simple linear classifier, and a softmax function.
+==== (max 500 chars)
+At the beginning we randomly choose a target, and as time progresses we increase the fraction of time we listen to the learners with probability
+1-eps = 1/(1+exp{-0.0001(i—2000)))
+==== (max 600 chars)
+We got really bad results, but we’re sadistic (and apparently masochistic as well).
+==== (max 10000 chars)
+We supplement the game-given reward by kill rewards when we identify an action that caused another players death.

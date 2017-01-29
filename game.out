@@ -1,0 +1,6 @@
+game_id,player_id,policy,score,state_file_path
+4469679384,1,Policy234678,184.05743161411831,/Users/user/Dropbox/workspace/APML/hackathon/states/4469679384.1.Policy234678.state.pkl
+4469679384,2,AvoidCollisions,195.65744181122355,/Users/user/Dropbox/workspace/APML/hackathon/states/4469679384.2.AvoidCollisions.state.pkl
+4469679384,3,AvoidCollisions,195.65744181122355,/Users/user/Dropbox/workspace/APML/hackathon/states/4469679384.3.AvoidCollisions.state.pkl
+4469679384,4,AvoidCollisions,190.58973871625392,/Users/user/Dropbox/workspace/APML/hackathon/states/4469679384.4.AvoidCollisions.state.pkl
+4469679384,5,AvoidCollisions,189.96826190825462,/Users/user/Dropbox/workspace/APML/hackathon/states/4469679384.5.AvoidCollisions.state.pkl
