@@ -88,6 +88,7 @@ class Policy(mp.Process):
                     self.learn(reward, t)
                     self.aq.put(self.act(t, state, player_state))
         except:
+            print("Unexpected error:", sys.exc_info()[0])
             self.log( "policy %s is down." % str(self), type='error')
             for input in iter(self.sq.get, None):
                 if input[0] == 'get_state': self.aq.put(None)

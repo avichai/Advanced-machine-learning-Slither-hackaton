@@ -1,0 +1,77 @@
+usage: slither.py [-h] [--record_to RECORD_TO] [--playback_from PLAYBACK_FROM]
+                  [--log_file LOG_FILE] [--output_file OUTPUT_FILE]
+                  [--state_folder STATE_FOLDER] [--to_render]
+                  [--render_rate RENDER_RATE] [--silence_log]
+                  [--board_size BOARD_SIZE]
+                  [--obstacle_density OBSTACLE_DENSITY]
+                  [--policy_wait_time POLICY_WAIT_TIME] [--food_map FOOD_MAP]
+                  [--random_food_prob RANDOM_FOOD_PROB]
+                  [--max_item_density MAX_ITEM_DENSITY]
+                  [--food_ratio FOOD_RATIO] [--death_penalty DEATH_PENALTY]
+                  [--game_duration GAME_DURATION] [--score_scope SCORE_SCOPE]
+                  [--init_player_size INIT_PLAYER_SIZE]
+                  [--min_n_players MIN_N_PLAYERS] [--policies POLICIES]
+                  [--default_policy DEFAULT_POLICY]
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+I/O:
+  --record_to RECORD_TO, -rt RECORD_TO
+                        file path to which game will be recorded.
+  --playback_from PLAYBACK_FROM, -p PLAYBACK_FROM
+                        file path from which game will be played-back
+                        (overrides record_to)
+  --log_file LOG_FILE, -l LOG_FILE
+                        a path to which game events are logged. default:
+                        game.log
+  --output_file OUTPUT_FILE, -o OUTPUT_FILE
+                        a path to a file in which game results and policy
+                        final states are written.
+  --state_folder STATE_FOLDER, -sf STATE_FOLDER
+                        a folder to which policies may record their states'.
+                        default: this file's folder, .\states\
+  --to_render, -r       whether game should not be rendered
+  --render_rate RENDER_RATE, -rr RENDER_RATE
+                        frames per second, note that the policy_wait_time
+                        bounds on the rate
+  --silence_log, -sl    if rendering is off, whether game log should also not
+                        be written to the screen
+
+Game:
+  --board_size BOARD_SIZE, -bs BOARD_SIZE
+                        a tuple of (height, width)
+  --obstacle_density OBSTACLE_DENSITY, -od OBSTACLE_DENSITY
+                        the density of obstacles on the board
+  --policy_wait_time POLICY_WAIT_TIME, -pwt POLICY_WAIT_TIME
+                        seconds to wait for policies to respond with actions
+  --food_map FOOD_MAP, -fm FOOD_MAP
+                        food icons and their respective reward, and growth
+                        effect
+  --random_food_prob RANDOM_FOOD_PROB, -fp RANDOM_FOOD_PROB
+                        probability of a random food appearing in a round
+  --max_item_density MAX_ITEM_DENSITY, -mid MAX_ITEM_DENSITY
+                        maximum item density in the board (not including the
+                        players)
+  --food_ratio FOOD_RATIO, -fr FOOD_RATIO
+                        the ratio between a corpse and the number of food
+                        items it produces
+  --death_penalty DEATH_PENALTY, -d DEATH_PENALTY
+                        the penalty for dying
+  --game_duration GAME_DURATION, -D GAME_DURATION
+                        # rounds in game
+
+Players:
+  --score_scope SCORE_SCOPE, -s SCORE_SCOPE
+                        score is sum_i(scope^(N-i)*reward(i)), i.e. weighted
+                        sum of last ~1/(1-score_scope) elements
+  --init_player_size INIT_PLAYER_SIZE, -is INIT_PLAYER_SIZE
+                        player length at start, minimum is 3
+  --min_n_players MIN_N_PLAYERS, -m MIN_N_PLAYERS
+                        Minimum number of players.
+  --policies POLICIES, -P POLICIES
+                        a string describing the policies to be used in the
+                        game, of the form: <policy_name>(<arg=val>,*);+. e.g. 
+                        MyPolicy(layer1=100,layer2=20);YourPolicy(your_params=
+                        123)
+  --default_policy DEFAULT_POLICY, -dp DEFAULT_POLICY
