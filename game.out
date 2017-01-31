@@ -1,4 +1,2 @@
 game_id,player_id,policy,score,state_file_path
-2026787647384,1,policy_308298827,4511.85792542079,C:\Users\Roee\PycharmProjects\Advanced-machine-learning-Slither-hackaton\states\2026787647384.1.policy_308298827.state.pkl
-2026787647384,2,policy_308298827,4512.033099939021,C:\Users\Roee\PycharmProjects\Advanced-machine-learning-Slither-hackaton\states\2026787647384.2.policy_308298827.state.pkl
-2026787647384,3,policy_308298827,4414.44426989288,C:\Users\Roee\PycharmProjects\Advanced-machine-learning-Slither-hackaton\states\2026787647384.3.policy_308298827.state.pkl
+1324273252112,1,policy_308298827,4567.0391812753305,C:\Users\Roee\PycharmProjects\Advanced-machine-learning-Slither-hackaton\states\1324273252112.1.policy_308298827.state.pkl

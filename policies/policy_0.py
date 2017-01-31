@@ -21,7 +21,6 @@ class AvoidCollisions(bp.Policy):
 
     def act(self, t, state, player_state):
         head_pos = player_state['chain'][-1]
-        print(head_pos)
         a = bp.Policy.ACTIONS[min(np.random.randint(20), 2)]  # 10% of actions are random
         for a in [a] + list(np.random.permutation(bp.Policy.ACTIONS)):
             r, c = head_pos.move(bp.Policy.TURNS[player_state['dir']][a]) % state.shape
