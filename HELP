@@ -78,3 +78,4 @@ Players:
 
 CONFIGS:
 -P policy_308298827(ray_len=1);policy_308298827(ray_len=3) -m=1 -l=log.txt -D=10000
+-P policy_308298827(ray_len=1);policy_308298827(ray_len=2);policy_308298827(ray_len=3);AvoidCollisions() -m=1 -l=log.txt -D=10000s
