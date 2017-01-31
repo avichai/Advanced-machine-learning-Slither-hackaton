@@ -13,25 +13,27 @@ PRINT = 1
 # todo set best hyper-params
 EMPTY_SQUARE = 0
 N_ACTIONS = 3
-DIR_RAY_LEN = 1
-STATE_DIM = DIR_RAY_LEN * N_ACTIONS + 1       # todo add head and tail pos and values
+RAY_LEN = 1
 BATCH_SIZE = 50  # todo default 50
 EPSILON_GREEDY_INIT = 1    # todo maybe epsilon reduces with time
 DIRECTION_TO_IND = {direction:ind for ind,direction in enumerate(bp.Policy.TURNS)}
 GAMMA = 0.9
 
-RAY_ZEROES = np.zeros(DIR_RAY_LEN, dtype=np.int32)
-RAY_OFFS = np.arange(DIR_RAY_LEN, dtype=np.int32) + 1
 
-R_OFFS = np.vstack((RAY_ZEROES, RAY_OFFS)).T
-C_OFFS = np.vstack((RAY_OFFS, RAY_ZEROES)).T
+def get_dir_offsets(ray_len):
+    ray_zeroes = np.zeros(ray_len, dtype=np.int32)
+    ray_offs = np.arange(ray_len, dtype=np.int32) + 1
 
-DIR_OFFSETS = {
-    'N': np.vstack((-R_OFFS, R_OFFS, -C_OFFS)),
-    'E': np.vstack((-C_OFFS, C_OFFS, R_OFFS)),
-    'S': np.vstack((R_OFFS, -R_OFFS, C_OFFS)),
-    'W': np.vstack((C_OFFS, -C_OFFS, -R_OFFS)),
-}
+    r_offs = np.vstack((ray_zeroes, ray_offs)).T
+    c_offs = np.vstack((ray_offs, ray_zeroes)).T
+
+    dir_offsets = {
+        'N': np.vstack((-r_offs, r_offs, -c_offs)),
+        'E': np.vstack((-c_offs, c_offs, r_offs)),
+        'S': np.vstack((r_offs, -r_offs, c_offs)),
+        'W': np.vstack((c_offs, -c_offs, -r_offs)),
+    }
+    return dir_offsets
 
 
 def affine(name_scope, input_tensor, out_channels, relu=True):
@@ -56,8 +58,8 @@ def build_nn(state):
     return s
 
 
-def get_nn_state(state, head_pos, direction):
-    offs = DIR_OFFSETS[direction]
+def get_nn_state(state, head_pos, direction, dir_offsets):
+    offs = dir_offsets[direction]
     head_offs = offs + head_pos
     head_offs %= state.shape
     return state[head_offs[:, 0], head_offs[:, 1]]
@@ -71,14 +73,16 @@ def manipulate_reward(r):
 class policy_308298827(bp.Policy):
     
     def cast_string_args(self, policy_args):
-        # todo impl where from
+        policy_args['ray_len'] = int(policy_args['ray_len']) if 'ray_len' in policy_args else RAY_LEN
         return policy_args
 
 
     def init_run(self):
         # todo init tf
         #if PRINT: print('### INIT ###')
-        self.state_dim = STATE_DIM
+        self.state_dim = self.ray_len * N_ACTIONS + 1
+        self.dir_offsets = get_dir_offsets(self.ray_len)
+        
         self.session = tf.Session()
         self.states = tf.placeholder(tf.float32, shape=(None, self.state_dim), name='state') # todo consider int32
         self.scores = build_nn(self.states)              # todo rm SCREEN_WIDTH
@@ -89,7 +93,7 @@ class policy_308298827(bp.Policy):
         self.pg_loss = tf.reduce_sum(self.cross_entropy_loss * self.rewards)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=0.0001, beta1=0.9, beta2=0.99, epsilon=1e-5) # todo default lr = 0.0001
         self.train_op = self.optimizer.minimize(self.pg_loss)
-        self.saver = tf.train.Saver()   # todo rm
+        # self.saver = tf.train.Saver()   # todo rm
 
         self.session.run(tf.global_variables_initializer())     # todo changed the initializer
 
@@ -97,7 +101,7 @@ class policy_308298827(bp.Policy):
         self.prev_t = -1
         self.prev_state = None
         self.prev_action = None
-        self.batch_states = np.zeros((BATCH_SIZE, STATE_DIM), dtype=np.float32)
+        self.batch_states = np.zeros((BATCH_SIZE, self.state_dim), dtype=np.float32)
         self.batch_actions = np.zeros(BATCH_SIZE, dtype=np.int32)
         self.batch_rewards = np.zeros(BATCH_SIZE, dtype=np.float32)
 
@@ -122,7 +126,7 @@ class policy_308298827(bp.Policy):
             self.batch_actions[ind] = self.prev_action
             self.batch_rewards[ind] = reward
             self.batch_ind += 1
-        if PRINT: print('REWARD:', reward)
+        # if PRINT: print('REWARD:', reward)
         #if PRINT: print('### LEARN done ###')
 
 
@@ -131,35 +135,32 @@ class policy_308298827(bp.Policy):
         self.round += 1     # todo: shouldnt increment forever (could explode)
         if self.round > 1000:
             # self.explore = False
-            self.epsilon_greedy = .001
+            self.epsilon_greedy = .01
 
         head_pos = player_state['chain'][-1]
         direction = player_state['dir']           # todo use these features
 
-        nn_state = np.zeros(STATE_DIM)
-        nn_state[:-1] = get_nn_state(state, head_pos, direction)
+        nn_state = np.zeros(self.state_dim)
+        nn_state[:-1] = get_nn_state(state, head_pos, direction, self.dir_offsets)
         nn_state[-1] = state[head_pos % state.shape]
         nn_state = nn_state[np.newaxis]
 
         rand = np.random.rand()
         # if self.explore and (rand < EPSILON_GREEDY):
         if rand <= self.epsilon_greedy:
-            mat_state = nn_state[0][:-1].reshape((N_ACTIONS, DIR_RAY_LEN))
-            if self.round < 300:
-                objs = (mat_state != EMPTY_SQUARE)
-            else:
-                objs = (mat_state != EMPTY_SQUARE) & (mat_state != state[head_pos % state.shape])
-
+            mat_state = nn_state[0][:-1].reshape((N_ACTIONS, self.ray_len))
+            objs = (mat_state != EMPTY_SQUARE)
             if not np.any(objs):
                 act_ind = 0 if rand < self.epsilon_greedy / 3 else 1 if rand < 2 * self.epsilon_greedy / 3 else 2
             else:
                 dir_min_dist = np.argmax(objs, axis=1)
                 no_obj = np.logical_not(np.any(objs, axis=1))
-                dir_min_dist[no_obj] = DIR_RAY_LEN + 1
+                dir_min_dist[no_obj] = self.ray_len + 1
                 act_ind = np.argmin(dir_min_dist)
-                print('DIR MIN DIST:', dir_min_dist)
-                print('ACT IND:', act_ind)
-                print('ACTION:', bp.Policy.ACTIONS[act_ind])
+                # print('DIR MIN DIST:', dir_min_dist)
+                # print('ACT IND:', act_ind)
+                # print('ACTION:', bp.Policy.ACTIONS[act_ind])
+                # print('ME:', state[head_pos % state.shape])
         else:
             probs = self.session.run(self.probabilities, feed_dict={self.states: nn_state})
             if PRINT: print('PROBS:', probs)
@@ -174,6 +175,7 @@ class policy_308298827(bp.Policy):
         #if PRINT: print('### ACT done###')
         # if PRINT: print('ROUND:' , self.round, 'EXPLORE:', self.explore)
         if PRINT: print('ROUND:' , self.round, 'EPSILON:', self.epsilon_greedy)
+        # print('rl', self.ray_len)
         return bp.Policy.ACTIONS[act_ind]   # todo
 
 
