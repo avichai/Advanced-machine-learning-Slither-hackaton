@@ -1,2 +1,2 @@
 game_id,player_id,policy,score,state_file_path
-2931263612800,1,policy_308298827,16843.18428480672,C:\Users\Roee\PycharmProjects\Advanced-machine-learning-Slither-hackaton\states\2931263612800.1.policy_308298827.state.pkl
+2432011043056,1,policy_308298827,29755.75526149513,C:\Users\Roee\PycharmProjects\Advanced-machine-learning-Slither-hackaton\states\2432011043056.1.policy_308298827.state.pkl
