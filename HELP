@@ -75,3 +75,6 @@ Players:
                         MyPolicy(layer1=100,layer2=20);YourPolicy(your_params=
                         123)
   --default_policy DEFAULT_POLICY, -dp DEFAULT_POLICY
+
+CONFIGS:
+-P policy_308298827(ray_len=1);policy_308298827(ray_len=3) -m=1 -l=log.txt -D=10000
