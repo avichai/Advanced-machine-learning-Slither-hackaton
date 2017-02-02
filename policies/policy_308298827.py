@@ -9,7 +9,7 @@ N_ACTIONS_ARR = np.arange(N_ACTIONS)
 
 BATCH_SIZE = 10
 EPSILON_GREEDY_INIT = 1
-EPSILON_GREEDY_REDUCE_FACTOR = .99999
+EPSILON_GREEDY_REDUCE_FACTOR = .99
 EARLY_EXPLORATION_N_ROUNDS = 50000
 
 RAY_LEN = 10
@@ -56,7 +56,7 @@ def get_q_state(state, head_pos, direction, dir_offsets, ray_len):
     is_realy_near = (min_dist == 0).astype(np.int32)
 
     q_state = np.hstack((near_objs, is_realy_near))
-    return np_to_string(q_state), rays_mat
+    return get_str_state(q_state, state[head_pos%state.shape]), rays_mat
 
 
 def manipulate_reward(reward, chain):
@@ -72,19 +72,18 @@ def manipulate_reward(reward, chain):
     return reward - l
 
 
-def np_to_string(array):
-    return ''.join([str(e) for e in array])
+def get_str_state(array, me):
+    return ''.join(['M' if (e == me) and (i<N_ACTIONS) else str(e) for i,e in enumerate(array)])
 
 
-def get_explore_act_ind(policy, q_state, rand, state, head_pos):
-    mat_state = q_state.reshape((N_ACTIONS, policy.ray_len))
-    objs = (mat_state != EMPTY_SQUARE) & (mat_state != state[head_pos % state.shape])
+def get_explore_act_ind(ray_len, rays_mat, rand, state, head_pos):
+    objs = (rays_mat != EMPTY_SQUARE) & (rays_mat != state[head_pos % state.shape])
     if not np.any(objs) or rand < 0.01:
         return 0 if rand < 1/3 else 1 if rand < 2/3 else 2
     else:
         dir_min_dist = np.argmax(objs, axis=1)
         no_obj = np.logical_not(np.any(objs, axis=1))
-        dir_min_dist[no_obj] = policy.ray_len + 1
+        dir_min_dist[no_obj] = ray_len + 1
         return np.argmin(dir_min_dist)
 
 
@@ -101,7 +100,7 @@ class policy_308298827(bp.Policy):
         self.Q = {}
         if 'load_from' in policy_args:
             self.early_exploration_n_rounds = 0
-            self.epsilon_greedy = 0.01
+            self.epsilon_greedy = 0.001
             try:
                 self.Q = load(open(policy_args['load_from'], 'rb'))
             except:
@@ -156,7 +155,7 @@ class policy_308298827(bp.Policy):
         rand = np.random.rand()
         if self.early_round < self.early_exploration_n_rounds:
             self.early_round += 1
-            act_ind = get_explore_act_ind(self, rays_mat, rand, state, head_pos)
+            act_ind = get_explore_act_ind(self.ray_len, rays_mat, rand, state, head_pos)
         elif rand < self.epsilon_greedy:
             self.epsilon_greedy *= EPSILON_GREEDY_REDUCE_FACTOR
             act_ind = 0 if rand < self.epsilon_greedy / 3 else 1 if rand < 2 * self.epsilon_greedy / 3 else 2
@@ -176,6 +175,12 @@ class policy_308298827(bp.Policy):
         self.ts_act = t
         self.state_t = q_state_str
         self.action_ind_t = act_ind
+
+        data = 'EXPLORE: ' + str(self.early_round < self.early_exploration_n_rounds) + ' EPSILON_EXPLORE: ' + str(self.epsilon_greedy) + '\n' \
+               + 'HEAD: ' + str(head_pos) + ' DIR: ' + str(direction) + '\n' \
+               + 'STATE: ' + q_state_str[:-3] + ' ' + q_state_str[-3:] + ' PROBS: ' + str(self.Q[q_state_str]) + '\n'\
+               + 'ACTION: ' + str(act_ind) + ' GAMMA: ' + str(self.gamma)#  todo rm
+        print(data)
 
         return bp.Policy.ACTIONS[act_ind]
 

@@ -361,6 +361,8 @@ class Game(object):
         try:
             r = 0
             while r < self.game_duration:
+                if self.to_render or r % 5000 == 0:
+                    print('ROUND:', r)
                 r += 1
                 if self.to_render:
                     self.render()
