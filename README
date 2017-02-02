@@ -1,15 +1,56 @@
-Policy2345678;CottonMouth; We learn an aggressive snake, that homes in on other snakes and block them
+policy_308298827;TheHungrySnake; We learn a snake that wish to eat more than everything else.
+
 ====
-ID1: 2345678
-ID2: 8765432
+ID1: 308298827
+ID2: 203455126
+
 ==== (max 1000 chars)
-We represent the world as directional rays to extrapolated player intersection  positions.
+The state representation we've chosen is a string of 6 values:
+The first three values are the nearest objects to the snake's head in 3 possible directions (left, right and forward).
+The last three values are bits of 0/1 which indicates whether the each object is right near of us
+(or at least on square far).
+Thus, the possible number of states is the the possible object in the game to the power of 3, multiplied by 2^3=8.
+Meaning the if we have 5 different object in the game we would get 5^3*2^3 = 1000 possible states.
+
+We tried different ray's length (meaning the length of the ray we look at each direction),
+after some tries, we got the best results with ray's length = 10.
+
+We aware of the low information of the state representation we've chosen, however when we tried to reach
+the state and strengthen the learner (by trying deep Q-learning using neural-network) we got bad results.
+
 ==== (max 600 chars)
-Our model has two parts - first, the rays are fed into 2 hidden layers of common kernels, the output from this stage is then fed into a simple linear classifier, and a softmax function.
+We implemented the Q learning paradigm, where the assumption are exactly like
+learned in class, i.e a MDP (Markov decision process) with the Markovian assumption.
+
+We started by trying to perform deep Q learning using neural network but after a day of
+exploring different nets with different learning parameters we notice that we can't beat policy_0
+that was provided.
+We believe that the reason is either that we don't enough strength to solve the problem since
+we need to perform the net inside time limits or maybe it's because the net need much more
+iteration to converge.
+
 ==== (max 500 chars)
-At the beginning we randomly choose a target, and as time progresses we increase the fraction of time we listen to the learners with probability
-1-eps = 1/(1+exp{-0.0001(i—2000)))
+In the first 50000 iteration we always look for something with value (other than 0)
+and go in that something direction (don't mind if it's a bad idea or not).
+We believe that in those iteration our snake will learn not to collide with himself
+and also no to hit walls.
+Afterwards, we perform a decreasing epsilon greedy exploration.
+
 ==== (max 600 chars)
-We got really bad results, but we’re sadistic (and apparently masochistic as well).
+We tested our policy against ourselves and against policy_0
+We achieved results that in most cases beats the policy_0 (yehhhh),
+after NN was a complete failure.
+We also noticed that as long as the game continues our policy is getting
+better than policy_0 which might indicate event better results after
+significantly more iteration.
+
 ==== (max 10000 chars)
-We supplement the game-given reward by kill rewards when we identify an action that caused another players death.
+We manipulated the reward by decreasing from it the length of the  snake, after we saw
+that without that manipulation our snake goes frequently into loops (since it receives
+positive reward for doing nothing)
+
+To sum up, we learned a lot from this hackathon, we started with ambitious ideas that
+didn't survive the reality test (perhaps because we needed more computation power in order
+to train a good neural network for the deep Q-learning paradigm).
+However, the relative simple Q-learnign table we tried to implement showed pretty
+good results so we decided to submit this implementation.
