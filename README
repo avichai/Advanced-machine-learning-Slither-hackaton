@@ -1,9 +1,5 @@
 policy_308298827;TheHungrySnake; We learn a snake that wish to eat more than everything else.
 
-====
-ID1: 308298827
-ID2: 203455126
-
 ==== (max 1000 chars)
 The state representation we've chosen is a string of 6 values:
 The first three values are the nearest objects to the snake's head in 3 possible directions (left, right and forward).
